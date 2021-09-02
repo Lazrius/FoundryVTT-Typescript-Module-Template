@@ -94,8 +94,5 @@
   },
   "include": [
     "./Source/**/*.ts"
-  ],
-  "exclude": [
-    "./Source/template.ts"
   ]
 }

@@ -23,8 +23,6 @@ import {
     visitEachChild,
     visitNode,
 } from "typescript";
-import Vinyl from "vinyl";
-import {Readable} from "stream";
 import less from "gulp-less";
 
 import Logger from "./Source/Utils/Logger";
@@ -62,8 +60,8 @@ const getManifest = (): Manifest | null => {
         name: ""
     };
 
-    if (fs.existsSync("src")) {
-        json.root = "src";
+    if (fs.existsSync("Source")) {
+        json.root = "Source";
     } else {
         json.root = "dist";
     }
@@ -131,29 +129,6 @@ const tsConfig = ts.createProject("tsconfig.json", {
     }),
 });
 
-export function string_src(filename: string, contents: string) {
-    const src = new Readable({objectMode: true});
-    src._read = function () {
-        this.push(new Vinyl({
-            cwd: "",
-            base: "./",
-            path: filename,
-            contents: Buffer.from(contents),
-        }));
-        this.push(null);
-    };
-    return src;
-}
-
-export const json_src = (filename: string, contents: any) => string_src(filename, JSON.stringify(contents));
-
-/********************/
-/*		BUILD		*/
-/********************/
-
-/**
- * Build TypeScript
- */
 function buildTS() {
     const debug = process.env.npm_lifecycle_event !== "package";
     let res = tsConfig.src()
@@ -167,7 +142,7 @@ function buildTS() {
 
 const bundleModule = () => {
     const debug = process.env.npm_lifecycle_event !== "package";
-    const bsfy = browserify({ debug: debug, entries: "dist/dice-stats.js" });
+    const bsfy = browserify({ debug: debug, entries: "dist/index.js" });
     return bsfy.bundle()
         .on('error', Logger.Err)
         .pipe(source(path.join("dist", "bundle.js")))
@@ -176,22 +151,16 @@ const bundleModule = () => {
         .pipe(gulp.dest('./'));
 }
 
-/**
- * Build Less
- */
-function buildLess() {
-    return gulp.src("Source/*.less").pipe(less()).pipe(gulp.dest("dist"));
+const buildLess = () => {
+    return gulp.src("Source/Style/*.less").pipe(less()).pipe(gulp.dest("dist"));
 }
 
-/**
- * Copy static files
- */
-async function copyFiles() {
+const copyFiles = async() => {
     const statics = ["lang", "fonts", "assets", "templates", "packs", "module.json", "system.json"];
     try {
         for (const file of statics) {
-            if (fs.existsSync(path.join("src", file))) {
-                await fs.copy(path.join("src", file), path.join("dist", file));
+            if (fs.existsSync(path.join("Source", file))) {
+                await fs.copy(path.join("Source", file), path.join("dist", file));
             }
         }
         return Promise.resolve();
@@ -231,7 +200,7 @@ const cleanDist = async () => {
 /**
  * Watch for changes for each build step
  */
-function buildWatch() {
+const buildWatch = () => {
     gulp.watch("Source/**/*.ts", { ignoreInitial: false }, buildTS);
     gulp.watch("Source/**/*.less", { ignoreInitial: false }, buildLess);
     gulp.watch(["Source/fonts", "Source/lang", "Source/templates", "Source/*.json"], { ignoreInitial: false }, copyFiles);
@@ -245,26 +214,26 @@ function buildWatch() {
  * Remove built files from `dist` folder
  * while ignoring source files
  */
-async function clean() {
+const clean = async () => {
     const name = path.basename(path.resolve("."));
     const files = [];
 
     // If the project uses TypeScript
-    if (fs.existsSync(path.join("src", `${name}.ts`))) {
+    if (fs.existsSync(path.join("Source", `index.ts`))) {
         files.push(
             "lang",
             "templates",
             "assets",
             "module",
-            `${name}.js`,
+            `index.js`,
             "module.json",
             "system.json",
             "template.json"
         );
     }
 
-    // If the project uses Less or SASS
-    if (fs.existsSync(path.join("src", `${name}.less`)) || fs.existsSync(path.join("src", `${name}.scss`))) {
+    // If the project uses Less
+    if (fs.existsSync(path.join("Source/Style/", `${name}.less`))) {
         files.push("fonts", `${name}.css`);
     }
 
@@ -282,28 +251,15 @@ async function clean() {
     }
 }
 
-/********************/
-/*		LINK		*/
-/********************/
-
-/**
- * Link build to User Data folder
- */
-async function linkUserData() {
+const linkUserData = async () => {
     const name = path.basename(path.resolve("."));
     const config = fs.readJSONSync("foundryconfig.json");
 
     let destDir;
     try {
-        if (
-            fs.existsSync(path.resolve(".", "dist", "module.json")) ||
-            fs.existsSync(path.resolve(".", "src", "module.json"))
-        ) {
+        if (fs.existsSync(path.resolve(".", "dist", "module.json")) || fs.existsSync(path.resolve(".", "Source", "module.json"))) {
             destDir = "modules";
-        } else if (
-            fs.existsSync(path.resolve(".", "dist", "system.json")) ||
-            fs.existsSync(path.resolve(".", "src", "system.json"))
-        ) {
+        } else if (fs.existsSync(path.resolve(".", "dist", "system.json")) || fs.existsSync(path.resolve(".", "Source", "system.json"))) {
             destDir = "systems";
         } else {
             throw Error(`Could not find ${Logger.Highlight("module.json")} or ${Logger.Highlight("system.json")}`);
@@ -398,7 +354,7 @@ async function packageBuild() {
 /**
  * Update version and URLs in the manifest JSON
  */
-function updateManifest(cb: any) {
+const updateManifest = (cb: any) => {
     const packageJson = fs.readJSONSync("package.json");
     const config = getConfig(),
         manifest = getManifest(),
@@ -428,7 +384,7 @@ function updateManifest(cb: any) {
             cb(Error("Missing version number"));
         }
 
-        if (versionMatch.test(version)) {https://map.leagueoflegends.com/en_US
+        if (versionMatch.test(version)) {
             targetVersion = version;
         } else {
             targetVersion = currentVersion.replace(versionMatch, (substring: string, major: string, minor: string, patch: string) => {
@@ -460,7 +416,6 @@ function updateManifest(cb: any) {
 
         /* Update URLs */
 
-        console.log(manifest.file);
         const result = `${rawURL}/v${manifest.file.version}/package/${manifest.file.name}-v${manifest.file.version}.zip`;
 
         manifest.file.url = repoURL;
@@ -481,11 +436,11 @@ function updateManifest(cb: any) {
     }
 }
 
-function gitAdd() {
+const gitAdd = () => {
     return gulp.src("package").pipe(git.add({ args: "--no-all" }));
 }
 
-function gitCommit() {
+const gitCommit = () => {
     const manifest = getManifest();
     if (manifest === null)
     {
@@ -499,7 +454,7 @@ function gitCommit() {
     );
 }
 
-function gitTag() {
+const gitTag = () => {
     const manifest = getManifest();
     if (manifest === null)
     {

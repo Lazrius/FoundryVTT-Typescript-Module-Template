@@ -3,11 +3,10 @@ import fs from 'fs-extra';
 import Logger from "./Logger";
 
 export const GetModuleInformation = (): ModuleData => {
-	if(!fs.existsSync("../module.json")) {
-		Logger.Err("Module JSON was missing. Unable to continue.");
-		throw Error();
+	if(!fs.existsSync("Source/module.json")) {
+		throw Error("Module JSON was missing. Unable to continue.");
 	}
 
-	const moduleJson = fs.readJsonSync("../module.json");
+	const moduleJson = fs.readJsonSync("Source/module.json");
 	return moduleJson;
 };

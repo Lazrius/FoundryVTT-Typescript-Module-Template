@@ -16,7 +16,7 @@ class Logger {
         const moduleName = module.name === undefined
             ? "Unknown Module"
             : module.name;
-        return Logger.GetCurrentTime() + moduleName;
+        return Logger.GetCurrentTime() + moduleName + " ";
     }
 
     private static GetCurrentTime(): string {

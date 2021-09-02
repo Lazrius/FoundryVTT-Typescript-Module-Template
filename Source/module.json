@@ -1,15 +1,15 @@
 {
-	"name": "lazrius-dice-stats",
-	"title": "Lazrius' Dice Stats",
-	"description": "An embedded system for monitoring the results of your beloved dice.",
+	"name": "lazrius-foundry-template",
+	"title": "Lazrius' FoundryVTT Template",
+	"description": ".",
 	"version": "1.0.0",
 	"author": "Laz#9427",
 	"scripts": ["bundle.js"],
-	"styles": ["dice-stats.css"],
+	"styles": ["template.css"],
 	"languages": [],
 	"minimumCoreVersion": "0.8.8",
 	"compatibleCoreVersion": "0.8.8",
-	"url": "https://github.com/Eranziel/foundryvtt-lancer",
-	"manifest": "https://raw.githubusercontent.com/Eranziel/foundryvtt-lancer/master/src/module.json",
-	"download": "https://raw.githubusercontent.com/Eranziel/foundryvtt-lancer/v1.0.1/package/lazrius-dice-stats-v1.0.1.zip"
+	"url": "https://github.com/Lazrius/FoundryVTT-Typescript-Module-Template",
+	"manifest": "https://raw.githubusercontent.com/Lazrius/FoundryVTT-Typescript-Module-Template/master/Source/module.json",
+	"download": "https://raw.githubusercontent.com/Lazrius/FoundryVTT-Typescript-Module-Template/master/Package/lazrius-foundry-template-v1.0.0.zip"
 }
