@@ -5,7 +5,7 @@
 	"version": "1.0.0",
 	"author": "Laz#9427",
 	"scripts": ["bundle.js"],
-	"styles": ["template.css"],
+	"styles": ["lazrius-foundry-template.css"],
 	"languages": [],
 	"minimumCoreVersion": "0.8.8",
 	"compatibleCoreVersion": "0.8.8",
