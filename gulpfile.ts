@@ -217,7 +217,7 @@ const cleanDist = async () => {
  * Watch for changes for each build step
  */
 const buildWatch = () => {
-    gulp.watch("Source/**/*.ts", { ignoreInitial: false }, buildTS);
+    gulp.watch("Source/**/*.ts", { ignoreInitial: false }, gulp.series(buildTS, bundleModule));
     gulp.watch("Source/**/*.less", { ignoreInitial: false }, buildLess);
     gulp.watch(["Source/fonts", "Source/lang", "Source/templates", "Source/*.json"], { ignoreInitial: false }, copyFiles);
 }
