@@ -1,4 +1,7 @@
 import Logger from "./Utils/Logger";
+// If you are developing a system rather than a module, change this to false
+export const IsModule = true;
+export const ModuleName = "lazrius-foundry-template"
 
 Hooks.once("init", () => {
    Logger.Log("Template module is initialised.")
