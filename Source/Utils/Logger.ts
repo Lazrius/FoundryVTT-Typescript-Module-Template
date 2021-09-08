@@ -1,6 +1,7 @@
 import chalk from "chalk";
-import {ModuleName} from "../index";
+import Globals from "../Globals";
 
+const moduleColour = chalk.bold.cyanBright;
 const error = chalk.bold.red;
 const warning = chalk.yellow;
 const log = chalk.cyan;
@@ -12,7 +13,7 @@ class Logger {
 	// static class
 	private constructor() {}
 	private static Prefix(): string {
-		return Logger.GetCurrentTime() + ModuleName + " ";
+		return Logger.GetCurrentTime() + moduleColour(Globals.ModuleName) + " ";
 	}
 
 	private static GetCurrentTime(): string {

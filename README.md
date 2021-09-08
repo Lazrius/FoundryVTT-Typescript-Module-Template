@@ -59,9 +59,7 @@ Due to the build pipeline, it's not as simple as just changing a few names and b
 - package.json
 - Source/Style/lazrius-foundry-template.less (rename the file to the new project name)
 - Source/module.json (update the following fields: url, manifest, download, styles)
-- Source/index.ts - Change ModuleName to match what is written in module.json
-
-(optionally, you can adjust IsModule from true to false, should be devloping a system, rather than a module.)
+- Source/Globals.ts - Change ModuleName to match what is written in module.json
 
 ## Contributing / Ideas
 I am happy for anyone to create issues or pull requests for extra things inside of this template. Please do inform me of any errors that you find.
