@@ -1,5 +1,5 @@
 import * as gulp from "gulp";
-import * as fs from "fs-extra";
+import fs from "fs";
 import * as path from "path";
 import archiver from "archiver";
 import stringify from "json-stringify-pretty-compact";
@@ -8,6 +8,16 @@ const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify');
 const buffer = require('vinyl-buffer');
 const source = require('vinyl-source-stream');
+
+const loadJson = (path: string): any => {
+    try {
+        const str = fs.readFileSync(path).toString();
+        return JSON.parse(str);
+    }
+    catch {
+        throw Error("Unable to load module.json")
+    }
+};
 
 import {
     createLiteral,
@@ -28,6 +38,7 @@ import less from "gulp-less";
 import Logger from "./Source/Utils/Logger";
 import {ModuleData} from "@league-of-foundry-developers/foundry-vtt-types/src/foundry/common/packages.mjs";
 import browserify from "browserify";
+import tsify = require("tsify");
 
 const ts = require("gulp-typescript");
 const git = require("gulp-git");
@@ -39,7 +50,7 @@ function getConfig() {
     let config;
 
     if (fs.existsSync(configPath)) {
-        config = fs.readJSONSync(configPath);
+        config = loadJson(configPath);
         return config;
     } else {
         return;
@@ -70,10 +81,10 @@ const getManifest = (): Manifest | null => {
     const systemPath = path.join(json.root, "system.json");
 
     if (fs.existsSync(modulePath)) {
-        json.file = fs.readJSONSync(modulePath);
+        json.file = loadJson(modulePath) as ModuleData;
         json.name = "module.json";
     } else if (fs.existsSync(systemPath)) {
-        json.file = fs.readJSONSync(systemPath);
+        json.file = loadJson(systemPath) as ModuleData;
         json.name = "system.json";
     } else {
         return null;
@@ -141,13 +152,16 @@ function buildTS() {
 }
 
 const bundleModule = () => {
-    const debug = process.env.npm_lifecycle_event !== "package";
-    const bsfy = browserify({ debug: debug, entries: "dist/index.js" });
-    return bsfy.bundle()
-        .on('error', Logger.Err)
+    const debug = argv.dbg || argv.debug;
+    const bsfy = browserify(path.join(__dirname, "Source/index.ts"), { debug: debug });
+    return bsfy.on('error', Logger.Err)
+        .plugin(tsify)
+        .bundle()
         .pipe(source(path.join("dist", "bundle.js")))
         .pipe(buffer())
+        .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(uglify())
+        .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest('./'));
 }
 
@@ -160,7 +174,7 @@ const copyFiles = async() => {
     try {
         for (const file of statics) {
             if (fs.existsSync(path.join("Source", file))) {
-                await fs.copy(path.join("Source", file), path.join("dist", file));
+                fs.copyFileSync(path.join("Source", file), path.join("dist", file));
             }
         }
         return Promise.resolve();
@@ -170,6 +184,8 @@ const copyFiles = async() => {
 }
 
 const cleanDist = async () => {
+    if (argv.dbg || argv.debug)
+        return;
     Logger.Log("Cleaning dist file clutter");
 
     const files: string[] = [];
@@ -215,6 +231,9 @@ const buildWatch = () => {
  * while ignoring source files
  */
 const clean = async () => {
+    if (!fs.existsSync("dist"))
+        fs.mkdirSync("dist");
+
     const name = path.basename(path.resolve("."));
     const files = [];
 
@@ -243,7 +262,8 @@ const clean = async () => {
     // Attempt to remove the files
     try {
         for (const filePath of files) {
-            await fs.remove(path.join("dist", filePath));
+            if (fs.existsSync(path.join("dist", filePath)))
+                fs.unlinkSync(path.join("dist", filePath));
         }
         return Promise.resolve();
     } catch (err) {
@@ -252,8 +272,8 @@ const clean = async () => {
 }
 
 const linkUserData = async () => {
-    const name = path.basename(path.resolve("."));
-    const config = fs.readJSONSync("foundryconfig.json");
+    const name = getManifest()!.file.name;
+    const config = loadJson("foundryconfig.json");
 
     let destDir;
     try {
@@ -270,7 +290,7 @@ const linkUserData = async () => {
             if (!fs.existsSync(path.join(config.dataPath, "Data")))
                 throw Error("User Data path invalid, no Data directory found");
 
-            linkDir = path.join(config.dataPath, "Data", destDir, name);
+            linkDir = path.join(config.dataPath, "Data", destDir, name as string);
         } else {
             throw Error("No User Data path defined in foundryconfig.json");
         }
@@ -278,10 +298,10 @@ const linkUserData = async () => {
         if (argv.clean || argv.c) {
             Logger.Warn(`Removing build in ${Logger.Highlight(linkDir)}`);
 
-            await fs.remove(linkDir);
+            fs.unlinkSync(linkDir);
         } else if (!fs.existsSync(linkDir)) {
             Logger.Ok(`Copying build to ${Logger.Highlight(linkDir)}`);
-            await fs.symlink(path.resolve("./dist"), linkDir);
+            fs.symlinkSync(path.resolve("./dist"), linkDir);
         }
         return Promise.resolve();
     } catch (err) {
@@ -309,12 +329,12 @@ async function packageBuild() {
             // Remove the package dir without doing anything else
             if (argv.clean || argv.c) {
                 Logger.Warn("Removing all packaged files");
-                fs.removeSync("package");
+                fs.rmSync("package", { force: true, recursive: true });
                 return;
             }
 
             // Ensure there is a directory to hold all the packaged versions
-            fs.ensureDirSync("package");
+            fs.existsSync("package");
 
             // Initialize the zip file
             const zipName = `${manifest.file.name}-v${manifest.file.version}.zip`;
@@ -355,7 +375,7 @@ async function packageBuild() {
  * Update version and URLs in the manifest JSON
  */
 const updateManifest = (cb: any) => {
-    const packageJson = fs.readJSONSync("package.json");
+    const packageJson = loadJson("package.json");
     const config = getConfig(),
         manifest = getManifest(),
         rawURL = config.rawURL,
@@ -427,7 +447,7 @@ const updateManifest = (cb: any) => {
             indent: "\t",
         });
 
-        fs.writeJSONSync("package.json", packageJson, { spaces: "\t" });
+        fs.writeFileSync("package.json", JSON.stringify(packageJson, null, '\t'));
         fs.writeFileSync(path.join(manifest.root, manifest.name), prettyProjectJson, "utf8");
 
         return cb();
