@@ -1,44 +1,47 @@
-import chalk from "chalk";
 import Globals from "../Globals";
-
-const moduleColour = chalk.bold.cyanBright;
-const error = chalk.bold.red;
-const warning = chalk.yellow;
-const log = chalk.cyan;
-const highlight = chalk.blueBright;
-const ok = chalk.green;
-const timeStamp = chalk.gray;
+import Color from "color";
 
 class Logger {
 	// static class
 	private constructor() {}
-	private static Prefix(): string {
-		return Logger.GetCurrentTime() + moduleColour(Globals.ModuleName) + " ";
-	}
 
 	private static GetCurrentTime(): string {
-		return `[${timeStamp(new Date().toLocaleTimeString())}] `;
+		return `[${(new Date().toLocaleTimeString())}] `;
 	}
 
-	static Log(str: string, colour: chalk.ChalkFunction = log): void {
-		console.log(Logger.Prefix() + colour(str));
+	static Log(str: string, colour: Color = Color("white"), bold = false): void {
+		const time = ToConsole(Logger.GetCurrentTime(), Color("gray"), false)
+		const moduleName = ToConsole(Globals.ModuleName + " ", Color("cyan"), true);
+		const text = ToConsole(str, colour, bold);
+		console.log(time.str + moduleName.str + text.str, ...time.params.concat(moduleName.params, text.params));
 	}
 
 	static Err(str: string): void {
-		Logger.Log(str, error);
+		Logger.Log(str, Color("orange"));
 	}
 
 	static Warn(str: string): void {
-		Logger.Log(str, warning);
+		Logger.Log(str, Color("yellow"));
 	}
 
 	static Ok(str: string): void {
-		Logger.Log(str, ok);
-	}
-
-	static Highlight(str: string): string {
-		return highlight(str);
+		Logger.Log(str, Color("green"));
 	}
 }
+
+interface ConsoleColour {
+	str: string,
+	params: Array<string>;
+}
+
+const ToConsole = (str: string, col: Color, bold: boolean): ConsoleColour => {
+	return {
+		str: `%c` + str + `%c`,
+		params: [
+			"color: " + col.hex() + ";" + (bold ? "font-weight: bold;" : ""),
+			"color: unset; font-weight: unset;"
+		]
+	}
+};
 
 export default Logger;

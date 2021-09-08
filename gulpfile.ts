@@ -190,7 +190,6 @@ const cleanDist = async () => {
 
     const files: string[] = [];
     const getFiles = async (dir: string) => {
-        Logger.Log("Searching " + Logger.Highlight(dir));
         const arr = await fs.promises.readdir(dir);
         for(const entry of arr)
         {
@@ -256,9 +255,6 @@ const clean = async () => {
         files.push("fonts", `${name}.css`);
     }
 
-    Logger.Warn("Files to clean:");
-    Logger.Ok("   " + Logger.Highlight(files.join("\n    ")));
-
     // Attempt to remove the files
     try {
         for (const filePath of files) {
@@ -282,7 +278,7 @@ const linkUserData = async () => {
         } else if (fs.existsSync(path.resolve(".", "dist", "system.json")) || fs.existsSync(path.resolve(".", "Source", "system.json"))) {
             destDir = "systems";
         } else {
-            throw Error(`Could not find ${Logger.Highlight("module.json")} or ${Logger.Highlight("system.json")}`);
+            throw Error(`Could not find module.json or system.json`);
         }
 
         let linkDir;
@@ -296,11 +292,11 @@ const linkUserData = async () => {
         }
 
         if (argv.clean || argv.c) {
-            Logger.Warn(`Removing build in ${Logger.Highlight(linkDir)}`);
+            Logger.Warn(`Removing build in ${linkDir}`);
 
             fs.unlinkSync(linkDir);
         } else if (!fs.existsSync(linkDir)) {
-            Logger.Ok(`Copying build to ${Logger.Highlight(linkDir)}`);
+            Logger.Ok(`Copying build to ${linkDir}`);
             fs.symlinkSync(path.resolve("./dist"), linkDir);
         }
         return Promise.resolve();

@@ -1,7 +1,8 @@
 import Logger from "./Utils/Logger";
+import Settings from "./Utils/Settings";
 
 Hooks.once("init", () => {
-   Logger.Log("Template module is initialised.")
+   Settings.Get().RegisterSettings();
 });
 
 Hooks.once("setup", () => {
