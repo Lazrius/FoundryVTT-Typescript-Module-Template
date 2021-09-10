@@ -171,10 +171,58 @@ const buildLess = () => {
 
 const copyFiles = async() => {
     const statics = ["lang", "fonts", "assets", "templates", "packs", "module.json", "system.json"];
+
+    const recursiveFileSearch = (dir: string, callback: (err: NodeJS.ErrnoException | null, res: Array<string>) => void) => {
+        let results: Array<string> = [];
+        fs.readdir(dir, (err, list) => {
+            if (err)
+                return callback(err, results);
+
+            let pending = list.length;
+            if (!pending)
+                return callback(null, results);
+
+            for (let file of list) {
+                file = path.resolve(dir, file);
+                fs.stat(file, (err, stat) => {
+                    if (stat && stat.isDirectory()) {
+                        recursiveFileSearch(file, (err, res) => {
+                            results = results.concat(res);
+                            if (!--pending)
+                                callback(null, results);
+                        });
+                    }
+                    else {
+                        results.push(file);
+                        if (!--pending)
+                            callback(null, results);
+                    }
+                });
+            }
+        });
+    };
     try {
-        for (const file of statics) {
-            if (fs.existsSync(path.join("Source", file))) {
-                fs.copyFileSync(path.join("Source", file), path.join("dist", file));
+        for (const entity of statics) {
+            const p = path.join("Assets", entity);
+            if (fs.existsSync(p)) {
+                if (fs.lstatSync(p).isDirectory())
+                    recursiveFileSearch(p, (err: NodeJS.ErrnoException | null, res: Array<string>) => {
+                        if (err)
+                            throw err;
+
+                        for (const file of res) {
+                            const newFile = path.join("dist", path.relative(process.cwd(), file.replace(/[Aa]ssets[\/\\]/g, '')));
+                            Logger.Ok("Copying file: " + newFile);
+                            const folder = path.parse(newFile).dir;
+                            if (!fs.existsSync(folder))
+                                fs.mkdirSync(folder, { recursive: true });
+                            fs.copyFileSync(file, newFile);
+                        }
+                    })
+                else {
+                    Logger.Ok("Copying file: " + p);
+                    fs.copyFileSync(p, path.join("dist", entity));
+                }
             }
         }
         return Promise.resolve();
