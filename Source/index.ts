@@ -1,8 +1,11 @@
 import Logger from "./Utils/Logger";
 import Settings from "./Utils/Settings";
 
-Hooks.once("init", () => {
+import PreloadTemplates from "./PreloadTemplates";
+
+Hooks.once("init", async () => {
    Settings.Get().RegisterSettings();
+   await PreloadTemplates();
 });
 
 Hooks.once("setup", () => {
