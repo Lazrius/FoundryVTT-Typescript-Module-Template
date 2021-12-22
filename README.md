@@ -43,8 +43,8 @@ Package will perform all the prior steps, but will then change all references to
 This commit can then be pushed, and properly updated for people using the module to easily update their own copies.
 
 ## Renaming the project.
-Due to the build pipeline, it's not as simple as just changing a few names and being done with it. In order to properly name your module, you'll need to update the name field inside of: 
-- package.json
+Due to the build pipeline, it's not as simple as just changing a few names and being done with it. In order to properly name your module, you'll need to update the name/path inside of: 
+- package.json 
 - foundryconfig.json
 - Source/Style/lazrius-foundry-template.less (rename the file to the new project name)
 - Source/module.json (update the following fields: url, manifest, download, styles)
