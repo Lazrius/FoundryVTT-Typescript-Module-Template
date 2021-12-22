@@ -1,10 +1,10 @@
 # FoundryVTT - Typescript + Gulp + Less Module/System Template
 
-This is a relatively barebones module template for FoundryVTT. It is built using Gulp + Typescript and serves as a starter point for all module development. The [LESS](https://lesscss.org/) CSS pre-processor is used for stylesheets.
+This is a relatively barebones module template for FoundryVTT. It is built using Gulp + Typescript and serves as a starter point for all module development. The [LESS](https://lesscss.org/) CSS pre-processor is used for stylesheets. The main purpose of this methodolgy is allowing easy usage of third party libraries, utility functions, etc.
 
 ## Notes
 - The entry point is index.ts inside of the Source folder.
-- The output files will go inside of a "dist" folder after a build. There will be one JavaScript file called "bundle.js", and a list of css files.
+- The output files will go inside of a "dist" folder after a build. There will be one JavaScript file called "bundle.js", and a list of css files, as well as any other assets you include.
 - This template has an automatic build and publish pipeline to streamline the process of developing and updating modules.
 - The Logger class inside of Utils exists to log with neat colours and proper timestamps with all log messages. Use this over console.log.
 
@@ -17,7 +17,7 @@ git clone git@github.com:Lazrius/FoundryVTT-Typescript-Module-Template.git
 mv FoundryVTT-Typescript-Module-Template MyCoolModule
 cd MyCoolModule
 
-: You'll need to change the remote to be away from the template remote.
+: You\'ll need to change the remote to be away from the template remote.
 git remote set-url origin git@github.com:YourName/YourRepo.git
 
 : Install our dependcies
@@ -40,23 +40,12 @@ build:watch will rebuild whenever the files change
 Clean will remove the dist folder and any remaining build artefacts.
 
 Package will perform all the prior steps, but will then change all references to the internal version with the new version specified. After doing such, it will generate a new zip file inside of a "package" folder, and automatically commit the file for you.
-This file can then be pushed, and properly updated for people using the module to easily update their own copies.
+This commit can then be pushed, and properly updated for people using the module to easily update their own copies.
 
-## Foundry Config (Required)
-In order to run properly, you need to have a file called `foundryconfig.json` located within the root directory. Due to it being very user specific, I have omitted it from the template. You can create it with a basic `touch foundryconfig.json` command. Here is a sample config to drop inside there:
-
-```json
-{  
-  "dataPath": "/path/to/foundryVTT/data",  
-  "moduleName": "Lazrius' Module Template",  
-  "repository": "https://github.com/Lazrius/FoundryVTT-Typescript-Module-Template",  
-  "rawURL": "https://raw.githubusercontent.com/Lazrius/FoundryVTT-Typescript-Module-Template",  
-  "downloadURL": "https://github.com/Lazrius/FoundryVTT-Typescript-Module-Template/raw"  
-}
-```
 ## Renaming the project.
 Due to the build pipeline, it's not as simple as just changing a few names and being done with it. In order to properly name your module, you'll need to update the name field inside of: 
 - package.json
+- foundryconfig.json
 - Source/Style/lazrius-foundry-template.less (rename the file to the new project name)
 - Source/module.json (update the following fields: url, manifest, download, styles)
 - Source/Globals.ts - Change ModuleName to match what is written in module.json
