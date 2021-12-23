@@ -33,6 +33,7 @@
 		"gulp": "^4.0.2",
 		"gulp-bro": "^2.0.0",
 		"gulp-git": "^2.10.1",
+		"gulp-git-streamed": "^2.10.1",
 		"gulp-less": "^5.0.0",
 		"gulp-sourcemaps": "^3.0.0",
 		"gulp-typescript": "^6.0.0-alpha.1",

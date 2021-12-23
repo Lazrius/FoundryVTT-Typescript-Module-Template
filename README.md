@@ -8,6 +8,14 @@ This is a relatively barebones module template for FoundryVTT. It is built using
 - This template has an automatic build and publish pipeline to streamline the process of developing and updating modules.
 - The Logger class inside of Utils exists to log with neat colours and proper timestamps with all log messages. Use this over console.log.
 
+## Foundry Path
+For the build pipeline to work properly you must define an environment variable called `FOUDNRY_PATH` that points to the save data directory. Example: 
+Windows Powershell:
+`[Environment]::SetEnvironmentVariable("FOUNDRY_PATH", ${Env:localappdata}+"\FoundryVTT", "User")`
+
+Linux:
+Add `FOUNDRY_PATH="~/PATH/TO/FOUNDRY"; export FOUNDRY_PATH` to ~/.profile
+
 ## Running
 There are a few in-built commands as part of package.json. If you just want to get started with the template, you can jump right in with the following commands:
 ```bash
