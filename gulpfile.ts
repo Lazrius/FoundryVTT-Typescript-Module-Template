@@ -313,7 +313,7 @@ const linkUserData = async () => {
 
 			linkDir = path.join(dataPath, "Data", destDir, name as string);
 		} else {
-			throw Error("FOUNDRY_PATH defined in environment");
+			throw Error("FOUNDRY_PATH not defined in environment");
 		}
 
 		if (argv.clean || argv.c) {
