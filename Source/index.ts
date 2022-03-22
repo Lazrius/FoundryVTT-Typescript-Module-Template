@@ -1,17 +1,16 @@
 import Logger from "./Utils/Logger";
-import Settings from "./Utils/Settings";
-
 import PreloadTemplates from "./PreloadTemplates";
+import { RegisterSettings } from "./Utils/Settings";
 
 Hooks.once("init", async () => {
-   Settings.Get().RegisterSettings();
-   await PreloadTemplates();
+	RegisterSettings();
+	await PreloadTemplates();
 });
 
 Hooks.once("setup", () => {
-   Logger.Log("Template module is being setup.")
+	Logger.Log("Template module is being setup.")
 });
 
 Hooks.once("ready", () => {
-   Logger.Ok("Template module is now ready.");
+	Logger.Ok("Template module is now ready.");
 });

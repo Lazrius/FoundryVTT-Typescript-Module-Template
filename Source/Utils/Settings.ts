@@ -6,7 +6,7 @@ class Settings {
 		Logger.Ok("Loading configuration settings.")
 		this.SettingsList = [
 			// Add settings items here
-			["coolDM", {
+			[ValidSetting.CoolDm, {
 				name: "Is the DM Cool?",
 				scope: "world", // or client
 				type: Boolean,
@@ -45,4 +45,13 @@ class Settings {
 	readonly SettingsList: ReadonlyArray<Pair<ClientSettings.PartialSetting>>;
 }
 
-export default Settings;
+export const RegisterSettings = (): void => Settings.Get().RegisterSettings();
+
+export enum ValidSetting {
+	CoolDm = "coolDm"
+}
+
+export const GetSetting = <T>(setting: ValidSetting): T | null => {
+	const found = Settings.Get().SettingsList.find(x => x[0] === setting);
+	return found ? found[1] as unknown as T : null;
+}
