@@ -1,5 +1,5 @@
 import * as gulp from "gulp";
-import fs from "fs";
+import fs from "fs-extra";
 import * as path from "path";
 import archiver from "archiver";
 import stringify from "json-stringify-pretty-compact";
@@ -167,8 +167,6 @@ const buildLess = () => {
 }
 
 const copyFiles = async() => {
-	const statics = ["lang", "fonts", "assets", "templates", "packs"];
-
 	const recursiveFileSearch = (dir: string, callback: (err: NodeJS.ErrnoException | null, res: Array<string>) => void) => {
 		let results: Array<string> = [];
 		fs.readdir(dir, (err, list) => {
@@ -199,32 +197,16 @@ const copyFiles = async() => {
 		});
 	};
 	try {
-		for (const entity of statics) {
-			const p = path.join("Assets", entity);
-			if (fs.existsSync(p)) {
-				if (fs.lstatSync(p).isDirectory()) {
-					recursiveFileSearch(p, (err: NodeJS.ErrnoException | null, res: Array<string>) => {
-						if (err)
-							throw err;
+		await fs.copyFile(path.join("Source/module.json"), path.join("dist/module.json"));
+		if (!fs.existsSync(path.resolve(__dirname, "Assets")))
+			return Promise.resolve();
 
-						for (const file of res) {
-							const newFile = path.join("dist", path.relative(process.cwd(), file.replace(/[Aa]ssets[\/\\]/g, '')));
-							Logger.Ok("Copying file: " + newFile);
-							const folder = path.parse(newFile).dir;
-							if (!fs.existsSync(folder))
-								fs.mkdirSync(folder, {recursive: true});
-							fs.copyFileSync(file, newFile);
-						}
-					})
-				}
-				else {
-					Logger.Ok("Copying file: " + p);
-					fs.copyFileSync(p, path.join("dist", entity));
-				}
-			}
+		const filter = (src: string, dest: string): boolean => {
+			Logger.Ok("Copying file: " + dest);
+			return true;
 		}
 
-		fs.copyFileSync(path.join("Source/module.json"), path.join("dist/module.json"));
+		fs.copySync(path.resolve(__dirname, "Assets"), path.resolve(__dirname, "dist"), { overwrite: true, filter });
 		return Promise.resolve();
 	} catch (err) {
 		await Promise.reject(err);
